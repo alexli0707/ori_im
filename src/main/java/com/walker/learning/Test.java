@@ -1,5 +1,7 @@
 package com.walker.learning;
 
+import ch.qos.logback.classic.LoggerContext;
+import ch.qos.logback.core.util.StatusPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,8 +28,10 @@ public class Test {
 //        String contentRead = new String(readContentBytes);
 //        System.out.println(contentRead);
 
-        Logger logger = LoggerFactory.getLogger(Object.class);
-        logger.error("123");
-
+        Logger logger = LoggerFactory.getLogger("chapters.introduction.HelloWorld2");
+        logger.debug("Hello world.");
+        // print internal state
+        LoggerContext lc = (LoggerContext) LoggerFactory.getILoggerFactory();
+        StatusPrinter.print(lc);
     }
 }
