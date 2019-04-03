@@ -89,4 +89,15 @@ public class MsgBuilder implements MsgType {
         String textMsgStr = textMsg.toJsonStr();
         return MsgBuilder.makeMsg(SEND_MSG, senderId, receiverId, textMsgStr);
     }
+
+    /**
+     * 封装消息
+     * @param senderId
+     * @param receiverId
+     * @param content
+     * @return
+     */
+    public static ByteBuffer makeContentMsg(int senderId, int receiverId, String content) {
+        return MsgBuilder.makeMsg(SEND_MSG, senderId, receiverId, content);
+    }
 }

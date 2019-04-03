@@ -71,6 +71,6 @@ public class ClientSelectionKeyHandler extends SelectionKeyHandler {
      * @throws IOException
      */
     private void read(SocketChannel socketChannel, Selector selector) throws IOException {
-        TCPProtocolHelper.handleServerRead(socketChannel);
+        TCPProtocolHelper.handleClientRead(socketChannel);
     }
 }

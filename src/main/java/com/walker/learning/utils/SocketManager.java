@@ -106,5 +106,14 @@ public class SocketManager {
 
     }
 
+    /**
+     * 根据客户端id获取socket channel
+     *
+     * @param clientId
+     */
+    public SocketChannel getSocketByClientId(int clientId) {
+        return ID_TO_CHANNEL_MAP.get(clientId);
+    }
+
 
 }

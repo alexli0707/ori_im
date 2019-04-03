@@ -38,16 +38,24 @@ public class TCPProtocolHelper {
         String content = imMsg.getContent();
         switch (cmdType) {
             case MsgType.PONG:
-
-
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive pong from server:{%s}", senderId));
+                break;
+            case MsgType.SEND_MSG:
+                BaseMsgContent msgContent = GSON.fromJson(content, BaseMsgContent.class);
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive msg from client:{%s},content:{%s}", senderId, msgContent.toJsonStr()));
+                break;
+            default:
+                LoggerHelper.getLogger(TCPProtocolHelper.class).warn(String.format("not handled cmd:%s", cmdType));
+                break;
         }
+        LoggerHelper.getLogger(TCPProtocolHelper.class).info(imMsg.toString());
     }
 
 
     public static void handleServerRead(SocketChannel socketChannel) throws IOException {
         BaseImMsg imMsg = TCPProtocolHelper.readInBuffer(socketChannel);
         if (null == imMsg) {
-            LoggerHelper.getLogger(IMServer.class).error("readInBuffer return null IMmsg");
+            LoggerHelper.getLogger(TCPProtocolHelper.class).error("readInBuffer return null IMmsg");
             return;
         }
         int cmdType = imMsg.getCmdType();
@@ -56,37 +64,46 @@ public class TCPProtocolHelper {
         String content = imMsg.getContent();
         switch (cmdType) {
             case MsgType.PING:
-                LoggerHelper.getLogger(IMServer.class).info(String.format("receive ping from clientId:{%s}", senderId));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive ping from clientId:{%s}", senderId));
                 ByteBuffer pongBuffer = MsgBuilder.makePongMsg(senderId);
 //                    byte[] bytes = new byte[pongBuffer.remaining()];
 //                    pongBuffer.get(bytes);
                 try {
                     socketChannel.write(pongBuffer);
-                    LoggerHelper.getLogger(IMServer.class).info(String.format("send pong to clientId:{%s}", senderId));
+                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("send pong to clientId:{%s}", senderId));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
                 break;
             case MsgType.AUTH:
-                LoggerHelper.getLogger(IMServer.class).info(String.format("auth content is : %s", content));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("auth content is : %s", content));
                 try {
                     AuthTokenMsgContent authTokenMsgContent = GSON.fromJson(content, AuthTokenMsgContent.class);
                     int clientId = ForTestTokenPool.getIdByToken(authTokenMsgContent.token);
                     SocketManager.getInstance().switchSocketToLabeledMap(clientId, socketChannel);
-                    LoggerHelper.getLogger(IMServer.class).info(String.format("authed client id is %s", clientId));
+                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("authed client id is %s", clientId));
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
                 break;
             case MsgType.SEND_MSG:
-                BaseMsgContent msgContent = GSON.fromJson(content, BaseMsgContent.class);
+//                BaseMsgContent msgContent = GSON.fromJson(content, BaseMsgContent.class);
+                // 判断接收消息方是否在线,如果在的话就直接投递消息
+                SocketChannel sc = SocketManager.getInstance().getSocketByClientId(receiverId);
+                if (null != sc) {
+                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("write msg from client %s,to client %s", senderId, receiverId));
+                    sc.write(MsgBuilder.makeContentMsg(senderId, receiverId, content));
+                } else {
+                    //当做离线或者推送消息
+                }
+
 
                 break;
             default:
-                LoggerHelper.getLogger(IMServer.class).warn(String.format("not handled cmd:%s", cmdType));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).warn(String.format("not handled cmd:%s", cmdType));
                 break;
         }
-        LoggerHelper.getLogger(IMServer.class).info(imMsg.toString());
+        LoggerHelper.getLogger(TCPProtocolHelper.class).info(imMsg.toString());
     }
 
 
