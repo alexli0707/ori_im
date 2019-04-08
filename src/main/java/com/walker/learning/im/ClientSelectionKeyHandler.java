@@ -1,6 +1,5 @@
 package com.walker.learning.im;
 
-import com.walker.learning.constant.ForTestTokenPool;
 import com.walker.learning.utils.LoggerHelper;
 import com.walker.learning.utils.TCPProtocolHelper;
 
@@ -17,10 +16,13 @@ import java.nio.channels.SocketChannel;
  * @date 2019/2/27
  */
 public class ClientSelectionKeyHandler extends SelectionKeyHandler {
-    private int senderId;
 
-    public ClientSelectionKeyHandler(int senderId) {
-        this.senderId = senderId;
+    private String username;
+    private String password;
+
+    public ClientSelectionKeyHandler(String username, String password) {
+        this.username = username;
+        this.password = password;
     }
 
     @Override
@@ -37,7 +39,7 @@ public class ClientSelectionKeyHandler extends SelectionKeyHandler {
                         e.printStackTrace();
                     }
                 }
-                ByteBuffer authBuffer = MsgBuilder.makeAuthMsg(this.senderId, ForTestTokenPool.getTokenById(senderId));
+                ByteBuffer authBuffer = ClientMsgBuilder.makeAuthMsg(this.username, this.password);
                 try {
                     channel.write(authBuffer);
                     channel.register(selector, SelectionKey.OP_READ);

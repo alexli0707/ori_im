@@ -1,9 +1,8 @@
 package com.walker.learning;
 
-import com.walker.learning.constant.ForTestTokenPool;
 import com.walker.learning.constant.ImConstants;
+import com.walker.learning.im.ClientMsgBuilder;
 import com.walker.learning.im.ClientSelectionKeyHandler;
-import com.walker.learning.im.MsgBuilder;
 import com.walker.learning.im.SelectionKeyHandler;
 import com.walker.learning.utils.LoggerHelper;
 import org.apache.commons.lang3.concurrent.BasicThreadFactory;
@@ -28,12 +27,14 @@ import java.util.concurrent.*;
 
 
 public class IMClient2 {
-    private static final int SENDER_ID = 2;
+    private static double clientId = -1;
     private static ScheduledExecutorService sPingExecutorService;
     private static ExecutorService sExecutorService;
+    private static String username = "user1";
+    private static String password = "123456";
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        final SelectionKeyHandler handler = new ClientSelectionKeyHandler(SENDER_ID);
+        final SelectionKeyHandler handler = new ClientSelectionKeyHandler(username, password);
         InetSocketAddress socketAddress = new InetSocketAddress("localhost", 12345);
         final SocketChannel socketChannel = SocketChannel.open(socketAddress);
         socketChannel.configureBlocking(false);
@@ -41,7 +42,7 @@ public class IMClient2 {
         if (socketChannel.isConnected()) {
             LoggerHelper.getLogger(IMClient2.class).info("in connect");
             socketChannel.register(selector, SelectionKey.OP_READ);
-            ByteBuffer authBuffer = MsgBuilder.makeAuthMsg(SENDER_ID, ForTestTokenPool.getTokenById(SENDER_ID));
+            ByteBuffer authBuffer = ClientMsgBuilder.makeAuthMsg(username, password);
             try {
                 socketChannel.write(authBuffer);
             } catch (IOException e) {
@@ -56,13 +57,13 @@ public class IMClient2 {
             @Override
             public void run() {
                 try {
-                    ByteBuffer pongBuffer = MsgBuilder.makePingMsg(SENDER_ID);
+                    ByteBuffer pongBuffer = ClientMsgBuilder.makePingMsg();
                     socketChannel.write(pongBuffer);
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
             }
-        }, 1, ImConstants.PING_DURATION, TimeUnit.SECONDS);
+        }, 10, ImConstants.PING_DURATION, TimeUnit.SECONDS);
         sExecutorService = Executors.newSingleThreadExecutor();
         sExecutorService.execute(new Runnable() {
             @Override
@@ -93,7 +94,7 @@ public class IMClient2 {
             String content = bufin.readLine();
             System.out.println(content);
             LoggerHelper.getLogger(IMClient2.class).info(String.format("input is : %s", content));
-            ByteBuffer byteBuffer = MsgBuilder.makeTextMsg(SENDER_ID, 1, content);
+            ByteBuffer byteBuffer = ClientMsgBuilder.makeTextMsg(1, content);
             socketChannel.write(byteBuffer);
         }
 

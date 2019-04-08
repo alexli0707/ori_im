@@ -26,7 +26,7 @@ public class SocketManager {
 
 
     //用户id -> channel 的字典.负责socket管理消息投递
-    private static ConcurrentHashMap<Integer, SocketChannel> ID_TO_CHANNEL_MAP = new ConcurrentHashMap<Integer, SocketChannel>();
+    private static ConcurrentHashMap<Double, SocketChannel> ID_TO_CHANNEL_MAP = new ConcurrentHashMap<Double, SocketChannel>();
 
     //channel -> 连接时间的字段,负责管理未标识身份的连接,定时去清理关闭连接后5s内未标识身份的连接
     private static ConcurrentHashMap<SocketChannel, Integer> CHANNEL_TO_TIMESTAMP_MAP = new ConcurrentHashMap<SocketChannel, Integer>();
@@ -97,7 +97,7 @@ public class SocketManager {
      * @param clientId
      * @param socketChannel
      */
-    public void switchSocketToLabeledMap(int clientId, SocketChannel socketChannel) {
+    public void switchSocketToLabeledMap(double clientId, SocketChannel socketChannel) {
         CHANNEL_TO_TIMESTAMP_MAP.remove(socketChannel);
         ID_TO_CHANNEL_MAP.put(clientId, socketChannel);
         sLogger.info(String.format("switchSocketToLabeledMap: clientId{%s},socketChannel{%s}", clientId, socketChannel));
@@ -111,8 +111,22 @@ public class SocketManager {
      *
      * @param clientId
      */
-    public SocketChannel getSocketByClientId(int clientId) {
+    public SocketChannel getSocketByClientId(double clientId) {
         return ID_TO_CHANNEL_MAP.get(clientId);
+    }
+
+    /**
+     * 关闭并移除socket
+     *
+     * @param socketChannel
+     */
+    public void closeAndRemoveSocket(SocketChannel socketChannel) {
+        try {
+            socketChannel.close();
+            CHANNEL_TO_TIMESTAMP_MAP.remove(socketChannel);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
 

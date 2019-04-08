@@ -8,6 +8,7 @@ package com.walker.learning.constant.protocol;
  */
 public interface MsgType {
     public static final int AUTH = 99;
+    public static final int TOKEN = 98;
     public static final int PING = 1;
     public static final int PONG = 2;
     public static final int SEND_MSG = 11;
