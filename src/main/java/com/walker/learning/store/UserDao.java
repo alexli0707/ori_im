@@ -1,6 +1,10 @@
 package com.walker.learning.store;
 
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.walker.learning.constant.RedisConstants;
 import com.walker.learning.models.AuthTokenMsgContent;
+import com.walker.learning.store.core.RedisConnInstance;
 import com.walker.learning.store.core.SQLConnInstance;
 import com.walker.learning.store.model.User;
 import com.walker.learning.utils.ToolsUtil;
@@ -16,6 +20,7 @@ import java.sql.SQLException;
  * @date 2019/4/8
  */
 public class UserDao {
+    private static final Gson GSON = new GsonBuilder().serializeNulls().create();
 
 
     public static int insert(AuthTokenMsgContent authTokenMsgContent) {
@@ -76,6 +81,20 @@ public class UserDao {
             e.printStackTrace();
         }
         return null;
+    }
+
+
+    public static boolean validToken(double clientId, String token) {
+        String userJson = RedisConnInstance.getInstance().get(RedisConstants.getTokenKey(token));
+        if (null == userJson) {
+            return false;
+        }
+        User user = GSON.fromJson(userJson, User.class);
+        if (user.getId() == clientId) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
 

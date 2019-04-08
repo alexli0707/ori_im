@@ -39,4 +39,11 @@ public class RedisConnInstance {
             jedis.set(key, value);
         }
     }
+
+    public String get(String key) {
+        try (Jedis jedis = sJedisPool.getResource()) {
+            jedis.select(StoreConfig.IM_REDIS_DEFAULT_DB);
+            return jedis.get(key);
+        }
+    }
 }

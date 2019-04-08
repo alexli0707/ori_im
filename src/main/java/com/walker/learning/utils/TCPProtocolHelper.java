@@ -75,6 +75,11 @@ public class TCPProtocolHelper {
         String content = imMsg.getContent();
         switch (cmdType) {
             case MsgType.PING:
+                if (!UserDao.validToken(senderId, token)) {
+                    SocketManager.getInstance().closeAndRemoveSocket(socketChannel);
+                    socketChannel.close();
+                    break;
+                }
                 LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive ping from clientId:{%s}", senderId));
                 ByteBuffer pongBuffer = ServerMsgBuilder.makePongMsg(senderId);
 //                    byte[] bytes = new byte[pongBuffer.remaining()];
@@ -124,6 +129,11 @@ public class TCPProtocolHelper {
                 break;
             case MsgType.SEND_MSG:
                 LoggerHelper.getLogger(TCPProtocolHelper.class).info("in receive MsgType.SEND_MSG");
+                if (!UserDao.validToken(senderId, token)) {
+                    SocketManager.getInstance().closeAndRemoveSocket(socketChannel);
+                    socketChannel.close();
+                    break;
+                }
 //                BaseMsgContent msgContent = GSON.fromJson(content, BaseMsgContent.class);
                 // 判断接收消息方是否在线,如果在的话就直接投递消息
                 SocketChannel sc = SocketManager.getInstance().getSocketByClientId(receiverId);
