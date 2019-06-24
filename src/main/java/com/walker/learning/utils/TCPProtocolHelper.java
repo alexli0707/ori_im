@@ -37,22 +37,22 @@ public class TCPProtocolHelper {
             return;
         }
         int cmdType = imMsg.getCmdType();
-        double senderId = imMsg.getSenderId();
-        double receiverId = imMsg.getReceiverId();
+        int senderId = imMsg.getSenderId();
+        int receiverId = imMsg.getReceiverId();
         String content = imMsg.getContent();
         switch (cmdType) {
             case MsgType.PONG:
-                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive pong from server:{%s}", senderId));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive pong from server:{%d}", senderId));
                 break;
             case MsgType.SEND_MSG:
                 BaseMsgContent msgContent = GSON.fromJson(content, BaseMsgContent.class);
-                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive msg from client:{%s},content:{%s}", senderId, msgContent.toJsonStr()));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive msg from client:{%d},content:{%s}", senderId, msgContent.toJsonStr()));
                 break;
             case MsgType.TOKEN:
                 TokenMsgContent tokenMsgContent = GSON.fromJson(content, TokenMsgContent.class);
                 ClientMsgBuilder.setToken(tokenMsgContent.token);
                 ClientMsgBuilder.setClientId(tokenMsgContent.id);
-                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive msg from client:{%s},content:{%s}", senderId, tokenMsgContent));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive msg from client:{%d},content:{%s}", senderId, tokenMsgContent));
                 break;
             default:
                 LoggerHelper.getLogger(TCPProtocolHelper.class).warn(String.format("not handled cmd:%s", cmdType));
@@ -69,24 +69,24 @@ public class TCPProtocolHelper {
             return;
         }
         int cmdType = imMsg.getCmdType();
-        double senderId = imMsg.getSenderId();
-        double receiverId = imMsg.getReceiverId();
+        int senderId = imMsg.getSenderId();
+        int receiverId = imMsg.getReceiverId();
         String token = imMsg.getToken();
         String content = imMsg.getContent();
         switch (cmdType) {
             case MsgType.PING:
+                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive ping from clientId:{%d}", senderId));
                 if (!UserDao.validToken(senderId, token)) {
                     SocketManager.getInstance().closeAndRemoveSocket(socketChannel);
                     socketChannel.close();
                     break;
                 }
-                LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("receive ping from clientId:{%s}", senderId));
                 ByteBuffer pongBuffer = ServerMsgBuilder.makePongMsg(senderId);
 //                    byte[] bytes = new byte[pongBuffer.remaining()];
 //                    pongBuffer.get(bytes);
                 try {
                     socketChannel.write(pongBuffer);
-                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("send pong to clientId:{%s}", senderId));
+                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("send pong to clientId:{%d}", senderId));
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
@@ -111,7 +111,7 @@ public class TCPProtocolHelper {
                             int clientId = user.getId();
                             SocketManager.getInstance().switchSocketToLabeledMap(clientId, socketChannel);
                             // 返回 token给客户端
-                            LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("authed client id is %s", clientId));
+                            LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("authed client id is %d", clientId));
                             //返回token
                             ByteBuffer tokenBuffer = ServerMsgBuilder.makeTokenMsg(uuid, clientId);
                             socketChannel.write(tokenBuffer);
@@ -138,7 +138,7 @@ public class TCPProtocolHelper {
                 // 判断接收消息方是否在线,如果在的话就直接投递消息
                 SocketChannel sc = SocketManager.getInstance().getSocketByClientId(receiverId);
                 if (null != sc) {
-                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("write msg from client %s,to client %s", senderId, receiverId));
+                    LoggerHelper.getLogger(TCPProtocolHelper.class).info(String.format("write msg from client %d,to client %d", senderId, receiverId));
                     sc.write(ServerMsgBuilder.makeContentMsg(senderId, receiverId, content));
                 } else {
                     //当做离线或者推送消息
@@ -147,7 +147,7 @@ public class TCPProtocolHelper {
 
                 break;
             default:
-                LoggerHelper.getLogger(TCPProtocolHelper.class).warn(String.format("not handled cmd:%s", cmdType));
+                LoggerHelper.getLogger(TCPProtocolHelper.class).warn(String.format("not handled cmd:%d", cmdType));
                 break;
         }
         LoggerHelper.getLogger(TCPProtocolHelper.class).info(imMsg.toString());
@@ -167,7 +167,7 @@ public class TCPProtocolHelper {
             int newReadBytes = socketChannel.read(readBuffer);
             readBytes += newReadBytes;
         }
-        readBuffer.position(68);
+        readBuffer.position(60);
         int length = readBuffer.getInt();
         int msgTotalLength = ServerMsgBuilder.MSG_CONTENT_BASE_LENGTH + length;
         int restContent = msgTotalLength - readBytes;
@@ -182,9 +182,9 @@ public class TCPProtocolHelper {
         byte[] tokenBytes = new byte[ServerMsgBuilder.TOKEN_BYTES_LENGTH];
         readBuffer.get(tokenBytes);
         String token = new String(tokenBytes, StandardCharsets.UTF_8);
-        double senderId = readBuffer.getDouble();
-        double receiverId = readBuffer.getDouble();
-        readBuffer.position(68);
+        int senderId = readBuffer.getInt();
+        int receiverId = readBuffer.getInt();
+        readBuffer.position(60);
         int contentLength = readBuffer.getInt();
         String content = "";
         if (contentLength > 0) {

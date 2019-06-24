@@ -10,9 +10,9 @@ import java.io.Serializable;
  */
 public class TokenMsgContent implements Serializable {
     public String token;
-    public double id;
+    public int id;
 
-    public TokenMsgContent(double id, String token) {
+    public TokenMsgContent(int id, String token) {
         this.id = id;
         this.token = token;
     }

@@ -59,6 +59,7 @@ public class IMClient2 {
                 try {
                     ByteBuffer pongBuffer = ClientMsgBuilder.makePingMsg();
                     socketChannel.write(pongBuffer);
+                    LoggerHelper.getLogger(IMClient2.class).info("sended ping msg");
                 } catch (IOException e) {
                     e.printStackTrace();
                 }

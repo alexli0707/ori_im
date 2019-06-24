@@ -35,6 +35,5 @@ logs/
 
 
 # docker_container_data
-./docker_container/mysql/data/*
-./docker_container/mysql/logs/*
+./docker_container/mysql/*
 ./docker_container/redis/data/*

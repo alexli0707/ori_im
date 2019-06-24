@@ -8,13 +8,13 @@ package com.walker.learning.models;
  */
 public class BaseImMsg {
     private int cmdType;
-    private double senderId;
-    private double receiverId;
+    private int senderId;
+    private int receiverId;
     private String token;
     private String content;
 
 
-    public BaseImMsg(int cmdType, double senderId, double receiverId, String token, String content) {
+    public BaseImMsg(int cmdType, int senderId, int receiverId, String token, String content) {
         this.cmdType = cmdType;
         this.senderId = senderId;
         this.receiverId = receiverId;
@@ -27,11 +27,11 @@ public class BaseImMsg {
         return cmdType;
     }
 
-    public double getSenderId() {
+    public int getSenderId() {
         return senderId;
     }
 
-    public double getReceiverId() {
+    public int getReceiverId() {
         return receiverId;
     }
 
@@ -45,6 +45,6 @@ public class BaseImMsg {
 
     @Override
     public String toString() {
-        return String.format("cmd:%s,senderId:%s,receiverId:%s,content:%s,token:%s", cmdType, senderId, receiverId, content, token);
+        return String.format("cmd:%d,senderId:%d,receiverId:%d,content:%s,token:%s", cmdType, senderId, receiverId, content, token);
     }
 }
